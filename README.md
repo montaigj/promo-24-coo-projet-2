@@ -17,9 +17,9 @@
 
 ### Entraide sur les bonus
 
-Vous pouvez vous entraider entre étudiants, **uniquement sur les parties bonus**.
+Vous pouvez vous entraider entre étudiants.
 Si quelqu'un vous a aidé, créez un fichier **`HELPERS`** à la racine de votre dépôt
-et listez-y leurs noms — cela leur vaudra des points bonus.
+et listez-y leurs noms (et les parties concernées) cela leur vaudra des points bonus.
 
 ### Bonnes pratiques attendues
 
