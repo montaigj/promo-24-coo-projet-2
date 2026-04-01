@@ -1,58 +1,106 @@
 package duckcorp.duck;
 
-/**
- * Classe abstraite représentant un canard en plastique.
- *
- * TODO (Ex1) :
- *   - Faites implémenter l'interface Qualifiable à cette classe
- *   - Implémentez equals() et hashCode() basés uniquement sur l'id
- *   - Implémentez les méthodes abstraites dans les sous-classes
- * @author Roussille Philippe <roussille@3il.fr>
- */
-public abstract class Duck {
+import java.util.Objects;
 
+/**
+ * Classe abstraite représentant un canard en plastique DuckCorp™.
+ * Chaque canard possède un identifiant unique auto-généré, un type et un score de qualité.
+ * Implémente Qualifiable : getQualityScore() satisfait le contrat de l'interface.
+ *
+ * equals() et hashCode() sont basés uniquement sur l'id :
+ * deux canards sont identiques si et seulement si ils partagent le même identifiant.
+ *
+ * @author Julien Montaigu-Lancelin
+ */
+public abstract class Duck implements Qualifiable {
+
+    /** Compteur partagé pour générer des identifiants uniques et séquentiels. */
     private static int counter = 0;
 
+    /** Identifiant unique du canard, ex : "S0042" pour un Standard. */
     private final String   id;
-    private final DuckType type;
-    private final int      qualityScore;
 
-    /** Constructeur fourni. Génère automatiquement un identifiant unique. */
+    /** Type du canard (STANDARD, MINI, LUXURY). */
+    private final DuckType type;
+
+    /**
+     * Score de qualité du canard, compris entre 0 et 100.
+     * Plafonné à 100 et planché à 0 à la construction.
+     */
+    private final int qualityScore;
+
+    /**
+     * Constructeur protégé appelé par les sous-classes.
+     * Génère automatiquement un identifiant unique à partir du type.
+     *
+     * @param type         le type de canard
+     * @param qualityScore le score de qualité brut (sera borné entre 0 et 100)
+     */
     protected Duck(DuckType type, int qualityScore) {
         this.id           = type.name().charAt(0) + String.format("%04d", ++counter);
         this.type         = type;
         this.qualityScore = Math.max(0, Math.min(100, qualityScore));
     }
 
-    // --- Getters fournis ---
+    // --- Getters ---
 
-    public String   getId()          { return id; }
-    public DuckType getType()        { return type; }
-    public int      getQualityScore(){ return qualityScore; }   // satisfera Qualifiable
+    /** @return l'identifiant unique du canard */
+    public String   getId()           { return id; }
 
-    // --- Méthodes abstraites à implémenter dans les sous-classes ---
+    /** @return le type du canard */
+    public DuckType getType()         { return type; }
 
+    /**
+     * Retourne le score de qualité du canard (0–100).
+     * Satisfait automatiquement le contrat de Qualifiable.
+     *
+     * @return le score de qualité
+     */
+    public int getQualityScore() { return qualityScore; }
+
+    // --- Méthodes abstraites ---
+
+    /**
+     * Retourne le prix de base du canard selon son type.
+     *
+     * @return le prix de base en euros
+     */
     public abstract double getBasePrice();
+
+    /**
+     * Retourne une description en français du canard.
+     *
+     * @return le nom du canard (ex : "Canard Standard")
+     */
     public abstract String describe();
 
-    // --- TODO : equals et hashCode ---
+    // --- equals et hashCode ---
 
     /**
      * Deux canards sont égaux si et seulement si ils ont le même identifiant.
-     * TODO : implémentez equals() en vous basant uniquement sur le champ id.
+     * Le type et la qualité ne sont pas pris en compte.
+     *
+     * @param o l'objet à comparer
+     * @return true si les deux canards ont le même id
      */
     @Override
     public boolean equals(Object o) {
-        throw new UnsupportedOperationException("TODO : Duck.equals()");
+        if (this == o) return true;
+        if (!(o instanceof Duck)) return false;
+        return id.equals(((Duck) o).id);
     }
 
-    /** TODO : implémentez hashCode() de façon cohérente avec equals(). */
+    /**
+     * hashCode cohérent avec equals() : basé uniquement sur l'id.
+     *
+     * @return le hash de l'identifiant
+     */
     @Override
     public int hashCode() {
-        throw new UnsupportedOperationException("TODO : Duck.hashCode()");
+        return Objects.hash(id);
     }
 
-    // --- toString fourni ---
+    // --- toString ---
 
     @Override
     public String toString() {

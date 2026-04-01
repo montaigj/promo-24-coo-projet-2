@@ -78,6 +78,7 @@ public class Stock<T extends Duck> {
     public int countDefective() {
         // TODO
         throw new UnsupportedOperationException("TODO : Stock.countDefective()");
+        
     }
 
     /**
