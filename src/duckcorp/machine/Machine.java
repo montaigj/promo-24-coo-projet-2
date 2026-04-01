@@ -8,13 +8,9 @@ import java.util.Random;
 /**
  * Classe abstraite représentant une machine de production.
  *
- * TODO (Ex2) :
- *   - Faites implémenter l'interface Maintainable à cette classe
- *   - Implémentez maintain()
- *   - Implémentez produceDuck(), getPurchaseCost(), getName() dans les sous-classes
  * @author Roussille Philippe <roussille@3il.fr>
  */
-public abstract class Machine {
+public abstract class Machine implements Maintainable {
 
     private static final Random RANDOM = new Random();
 
@@ -37,21 +33,17 @@ public abstract class Machine {
     public int      getCapacity()        { return capacity; }
     public int      getMaintenanceCost() { return maintenanceCost; }
 
-    /**
-     * Retourne l'état courant de la machine (entre 0 et 100).
-     * Fourni — satisfera automatiquement Maintainable.getCondition() quand vous
-     * ajouterez implements Maintainable.
-     */
+    /** Retourne l'état courant de la machine (entre 0 et 100). */
     public int getCondition() { return condition; }
 
-    // --- TODO : maintain() ---
+    // --- maintain() ---
 
     /**
      * Effectue une maintenance : augmente condition de 40 points, plafonnée à 100.
-     * TODO (Ex2) : implémentez cette méthode.
      */
+    @Override
     public void maintain() {
-        throw new UnsupportedOperationException("TODO : Machine.maintain()");
+        condition = Math.min(100, condition + 40);
     }
 
     // --- Méthodes fournies ---

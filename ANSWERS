@@ -1,0 +1,16 @@
+Question (Ex1) : Une méthode default dans une interface peut-elle accéder aux champs privés de la classe qui l'implémente 
+? Justifiez, en vous appuyant sur isDefective() dans Qualifiable et getQualityScore() dans Duck.
+
+Réponse : 
+Non, une méthode default ne peut pas accéder aux champs privés de la classe qui l'implémente —
+ c'est pourquoi isDefective() dans Qualifiable passe obligatoirement par getQualityScore(),
+ qui est la méthode de l'interface, plutôt que d'accéder directement au champ qualityScore de Duck.
+
+Question 2 : 
+ Dans ce projet, Maintainable est une interface et Machine est une classe abstraite. Quelle règle Java vous aurait empêché de faire l'inverse (rendre Maintainable abstraite et Machine une interface) ? 
+ Plus généralement, quand choisit-on une interface plutôt qu'une classe abstraite ?
+
+Réponse : 
+Java n'autorise pas l'héritage multiple de classes : une classe ne peut étendre qu'une seule classe parente. 
+Si Maintainable était une classe abstraite, Machine ne pourrait pas l'étendre et éventuellement hériter d'une autre classe 
+— ce serait bloquant dès qu'on voudrait composer les hiérarchies. Une interface, en revanche, peut être implémentée en nombre illimité.
