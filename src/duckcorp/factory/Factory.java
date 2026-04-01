@@ -6,51 +6,47 @@ import duckcorp.order.Order;
 import duckcorp.stats.ProductionStats;
 import duckcorp.stock.Stock;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
- * L'usine du joueur. Gère le budget, les machines, le stock et la réputation.
+ * Cœur du jeu : orchestre les machines, le stock, le budget et la réputation.
+ * Appelée par {@link duckcorp.Game} à chaque étape d'un tour.
  *
- * TODO (Ex5) :
- *   - Implémentez buyMachine(), maintainMachine(), runProduction(), fulfillOrder()
- *
- * TODO (Bonus 1) :
- *   - Implémentez endTurn()
- *
- * Le constructeur, les getters et notifyExpiredOrder() sont fournis.
- * @author Roussille Philippe <roussille@3il.fr>
+ * @author Roussille Philippe
  */
 public class Factory {
 
     private double budget;
-    private double reputation;
-    private final Stock<Duck> stock;
-    private final List<Machine> machines;
-    private final ProductionStats stats;
-
-    public Factory(double initialBudget) {
-        this.budget     = initialBudget;
-        this.reputation = 100.0;
-        this.stock      = new Stock<>();
-        this.machines   = new ArrayList<>();
-        this.stats      = new ProductionStats();
-    }
-
-    // --- Getters fournis ---
-
-    public double         getBudget()     { return budget; }
-    public double         getReputation() { return reputation; }
-    public Stock<Duck>    getStock()      { return stock; }
-    public List<Machine>  getMachines()   { return Collections.unmodifiableList(machines); }
-    public ProductionStats getStats()     { return stats; }
-
-    // --- Méthodes fournies ---
+    private double reputation = 100.0;
+    private final Stock<Duck> stock = new Stock<>();
+    private final List<Machine> machines = new ArrayList<>();
+    private final ProductionStats stats = new ProductionStats();
 
     /**
-     * Signale qu'une commande a expiré : pénalise la réputation et met à jour les stats.
-     * Appelée par Game à chaque commande expirée. Ne pas modifier.
+     * Crée une nouvelle usine avec le budget de départ donné.
+     *
+     * @param initialBudget budget initial en euros
+     */
+    public Factory(double initialBudget) { this.budget = initialBudget; }
+
+    /** @return le budget actuel en euros */
+    public double getBudget() { return budget; }
+
+    /** @return la réputation actuelle (0–100) */
+    public double getReputation() { return reputation; }
+
+    /** @return le stock de canards de l'usine */
+    public Stock<Duck> getStock() { return stock; }
+
+    /** @return une vue non modifiable de la liste des machines */
+    public List<Machine> getMachines() { return Collections.unmodifiableList(machines); }
+
+    /** @return les statistiques de production et de vente */
+    public ProductionStats getStats() { return stats; }
+
+    /**
+     * Signale qu'une commande a expiré.
+     * Pénalise la réputation de 5 points et incrémente le compteur d'expirations.
      */
     public void notifyExpiredOrder() {
         reputation = Math.max(0, reputation - 5);
@@ -59,82 +55,91 @@ public class Factory {
 
     /**
      * Calcule le score final du joueur.
-     * Formule : budget + réputation × 80 + commandesHonorées × 200 − commandesExpirées × 100
+     * Formule : budget + réputation×80 + commandesHonorées×200 − commandesExpirées×100
+     *
+     * @return le score final
      */
     public int computeScore() {
-        return (int) (budget
-                + reputation * 80
-                + stats.getTotalOrders() * 200
-                - stats.getOrdersExpired() * 100);
+        return (int) (budget + reputation * 80 + stats.getTotalOrders() * 200 - stats.getOrdersExpired() * 100);
     }
 
-    // --- TODO (Ex5) ---
-
     /**
-     * Achète une machine si le budget est suffisant.
-     * Déduit le coût d'achat du budget et ajoute la machine à la liste.
+     * Tente d'acheter une machine.
+     * Vérifie que le budget est suffisant, déduit le coût et ajoute la machine.
      *
-     * @return true si l'achat a réussi, false si budget insuffisant
+     * @param m la machine à acheter
+     * @return {@code true} si l'achat a réussi, {@code false} si budget insuffisant
      */
-    public boolean buyMachine(Machine machine) {
-        // TODO
-        throw new UnsupportedOperationException("TODO : Factory.buyMachine()");
+    public boolean buyMachine(Machine m) {
+        if (budget < m.getPurchaseCost()) return false;
+        budget -= m.getPurchaseCost();
+        machines.add(m);
+        return true;
     }
 
     /**
-     * Effectue la maintenance d'une machine si le budget est suffisant.
-     * Déduit le coût de maintenance et appelle machine.maintain().
+     * Tente d'effectuer la maintenance d'une machine.
+     * Vérifie que le budget est suffisant, déduit le coût et délègue à {@link Machine#maintain()}.
      *
-     * @return true si la maintenance a réussi, false si budget insuffisant
+     * @param m la machine à entretenir
+     * @return {@code true} si la maintenance a réussi, {@code false} si budget insuffisant
      */
-    public boolean maintainMachine(Machine machine) {
-        // TODO
-        throw new UnsupportedOperationException("TODO : Factory.maintainMachine()");
+    public boolean maintainMachine(Machine m) {
+        if (budget < m.getMaintenanceCost()) return false;
+        budget -= m.getMaintenanceCost();
+        m.maintain();
+        return true;
     }
 
     /**
-     * Lance la production de toutes les machines pour ce tour.
-     * Chaque machine produit autant de canards que sa capacité.
-     * Les canards sont ajoutés au stock et retournés dans une liste.
+     * Déclenche la production de toutes les machines pour ce tour.
+     * Chaque machine produit autant de canards que sa capacité via {@link Machine#produceDuck()}.
+     * Les canards produits sont ajoutés au stock et enregistrés dans les stats.
      *
-     * Conseil : déléguez à machine.produceDuck() — ne faites pas de instanceof.
-     * Mettez à jour les stats via stats.recordProduction().
-     *
-     * @return la liste de tous les canards produits ce tour
+     * @return la liste complète des canards produits ce tour
      */
     public List<Duck> runProduction() {
-        // TODO
-        throw new UnsupportedOperationException("TODO : Factory.runProduction()");
+        List<Duck> produced = new ArrayList<>();
+        for (Machine m : machines)
+            for (int i = 0; i < m.getCapacity(); i++) {
+                Duck d = m.produceDuck();
+                stock.add(d);
+                produced.add(d);
+            }
+        stats.recordProduction(produced);
+        return produced;
     }
 
     /**
      * Tente d'honorer une commande.
-     * Si le stock est suffisant :
-     *   - retire les canards du stock (les moins bons en premier, triés par qualité croissante)
-     *   - crédite le budget du montant de la commande
-     *   - met à jour la réputation selon la qualité moyenne des canards expédiés :
-     *       qualité moy. >= 70 → +3
-     *       qualité moy. >= 50 → +1
-     *       qualité moy. <  50 → 0  (pas de bonus)
-     *   - marque la commande comme honorée
-     *   - met à jour les stats
+     * Si le stock est suffisant : retire les canards, crédite le budget,
+     * met à jour la réputation selon la qualité moyenne (+3 si moy ≥ 70, +1 si moy ≥ 50),
+     * marque la commande honorée et enregistre la vente dans les stats.
      *
-     * @return true si la commande a été honorée, false sinon
+     * @param order la commande à honorer
+     * @return {@code true} si la commande a été honorée, {@code false} si stock insuffisant
      */
     public boolean fulfillOrder(Order order) {
-        // TODO
-        throw new UnsupportedOperationException("TODO : Factory.fulfillOrder()");
+        if (!order.canBeFulfilled(stock)) return false;
+        List<Duck> shipped = stock.remove(order.getDuckType(), order.getQuantity());
+        double avg = shipped.stream().mapToInt(Duck::getQualityScore).average().orElse(0);
+        budget += order.getTotalValue();
+        if (avg >= 70)      reputation = Math.min(100, reputation + 3);
+        else if (avg >= 50) reputation = Math.min(100, reputation + 1);
+        order.fulfill();
+        stats.recordSale(order);
+        return true;
     }
 
-    // --- TODO (Bonus 1) ---
-
     /**
-     * Fin de tour : dégrade toutes les machines.
-     * Pour chaque machine en état critique après dégradation (needsMaintenance()),
+     * Effectue la fin de tour : dégrade toutes les machines.
+     * Pour chaque machine dont la condition passe en dessous de 30 après dégradation,
      * pénalise la réputation de 5 points.
      */
     public void endTurn() {
-        // TODO
-        throw new UnsupportedOperationException("TODO : Factory.endTurn()");
+        for (Machine m : machines) {
+            m.degrade();
+            if (m.needsMaintenance()) reputation = Math.max(0, reputation - 5);
+        }
     }
 }

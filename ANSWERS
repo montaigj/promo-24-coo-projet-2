@@ -2,15 +2,31 @@ Question (Ex1) : Une méthode default dans une interface peut-elle accéder aux 
 ? Justifiez, en vous appuyant sur isDefective() dans Qualifiable et getQualityScore() dans Duck.
 
 Réponse : 
-Non, une méthode default ne peut pas accéder aux champs privés de la classe qui l'implémente —
- c'est pourquoi isDefective() dans Qualifiable passe obligatoirement par getQualityScore(),
- qui est la méthode de l'interface, plutôt que d'accéder directement au champ qualityScore de Duck.
+Non. Une méthode default appartient à l'interface, pas à la classe — elle ne voit pas ses champs privés. 
+C'est pourquoi isDefective() passe par getQualityScore() au lieu d'accéder directement à qualityScore.
 
 Question 2 : 
  Dans ce projet, Maintainable est une interface et Machine est une classe abstraite. Quelle règle Java vous aurait empêché de faire l'inverse (rendre Maintainable abstraite et Machine une interface) ? 
  Plus généralement, quand choisit-on une interface plutôt qu'une classe abstraite ?
 
 Réponse : 
-Java n'autorise pas l'héritage multiple de classes : une classe ne peut étendre qu'une seule classe parente. 
-Si Maintainable était une classe abstraite, Machine ne pourrait pas l'étendre et éventuellement hériter d'une autre classe 
-— ce serait bloquant dès qu'on voudrait composer les hiérarchies. Une interface, en revanche, peut être implémentée en nombre illimité.
+Java interdit l'héritage multiple de classes. Si Maintainable était une classe abstraite, Machine ne pourrait pas en hériter tout en héritant d'autre chose. Une interface n'a pas cette contrainte : on peut en implémenter autant qu'on veut.
+On choisit l'interface pour définir un contrat (ce que l'objet sait faire), la classe abstraite pour factoriser du code commun (ce que l'objet est).
+
+Question (Ex4) : Expliquez pourquoi canBeFulfilled(Stock<Duck> stock) serait une signature plus restrictive que canBeFulfilled(Stock<? extends Duck> stock). 
+Donnez un exemple de code Java qui compilerait avec la seconde mais pas avec la première.
+
+Réponse :
+Les génériques Java sont invariants : Stock<StandardDuck> n'est pas un sous-type de Stock<Duck>. Avec Stock<Duck>, seul ce type exact est accepté. Avec Stock<? extends Duck>, on accepte n'importe quel stock de sous-type de Duck.
+javaStock<StandardDuck> s = new Stock<>();
+order.canBeFulfilled(s); // ❌ avec Stock<Duck>
+order.canBeFulfilled(s); // ✅ avec Stock<? extends Duck>
+
+Question 5: 
+Factory expose getMachines() qui retourne une List<Machine> non modifiable (via Collections.unmodifiableList()). Pourquoi ce choix ? Que se passerait-il si on retournait la liste interne directement ?
+ Peut-on quand même modifier les machines elles-mêmes (via leurs méthodes) depuis l'extérieur ?
+
+ Réponse :
+ Retourner Collections.unmodifiableList(machines) empêche le code extérieur d'appeler add() ou remove() sur la liste interne. Si on retournait machines directement, 
+ n'importe qui pourrait ajouter ou supprimer des machines sans passer par buyMachine(), contournant la vérification du budget.
+En revanche, la liste non modifiable ne protège pas les objets qu'elle contient : on peut toujours récupérer une Machine et appeler machine.maintain() ou machine.degrade() depuis l'extérieur. L'encapsulation porte sur la structure de la liste, pas sur l'état interne des machines.

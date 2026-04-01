@@ -63,7 +63,10 @@ public class ProductionStats {
      */
     public void recordProduction(List<Duck> ducks) {
         // TODO
-        throw new UnsupportedOperationException("TODO : ProductionStats.recordProduction()");
+        for( Duck duck : ducks) {
+            DuckType type = duck.getType();
+            produced.put(type, produced.getOrDefault(type, 0) + 1);
+        }
     }
 
     /**
